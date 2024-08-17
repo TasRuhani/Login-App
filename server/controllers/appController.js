@@ -2,6 +2,7 @@ import UserModel from '../model/User.model.js';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import ENV from '../config.js';
+import otpGenerator from 'otp-generator'
 
 /** Middleware to verify user existence */
 export async function verifyUser(req, res, next) {
@@ -14,6 +15,7 @@ export async function verifyUser(req, res, next) {
 
         next();
     } catch (error) {
+        console.error(error);
         return res.status(500).json({ error: "Internal Server Error" });
     }
 }
@@ -96,7 +98,7 @@ export async function getUser(req, res) {
     try {
         const user = await UserModel.findOne({ username });
         if (!user) return res.status(404).json({ error: "User not found" });
-        
+
         // removes the password value from user and converts it to JSON as mongoose return unnecessary data
         const { password, ...rest } = Object.assign({}, user.toJSON());
 
@@ -107,53 +109,43 @@ export async function getUser(req, res) {
     }
 }
 
-/** PUT: http://localhost:8080/api/updateuser
- * @param: {
-    "id": "<userid>"
-    }
-body: {
-    firstname: '',
-    address: '',
-    profile : ''
-    }
- */
+/** PUT: /api/updateuser */
 export async function updateUser(req, res) {
     try {
-        const id = req.query.id;
+        const { userId } = req.user;
 
-        if (id) {
+        if (userId) {
             const body = req.body;
 
             // Update data
-            const result = await UserModel.updateOne({ _id: id }, body);
+            const result = await UserModel.updateOne({ _id: userId }, body);
 
             if (result.nModified === 0) {
-                return res.status(404).send({ error: "User Not Found or No Changes Made" });
+                return res.status(404).json({ error: "User Not Found or No Changes Made" });
             }
 
-            return res.status(200).send({ msg: "Database Updated" });
+            return res.status(200).json({ msg: "Database Updated" });
         } else {
-            return res.status(400).send({ error: "ID not provided" });
+            return res.status(400).json({ error: "ID not provided" });
         }
     } catch (error) {
-        return res.status(500).send({ error: "Internal Server Error" });
+        console.error(error);
+        return res.status(500).json({ error: "Internal Server Error" });
     }
 }
-    
 
-/** GET: /api/user/generateOTP */
+/** GET: /api/generateOTP */
 export async function generateOTP(req, res) {
-    // Implement your generateOTP logic here
-    res.json('generateOTP route');
+    let OTP = await otpGenerator.generate(6, {lowerCaseAlphabets: false, upperCaseAlphabets: false, specialChars: false });
 }
 
-/** GET: /api/user/verifyOTP */
+/** GET: /api/verifyOTP */
 export async function verifyOTP(req, res) {
     // Implement your verifyOTP logic here
     res.json('verifyOTP route');
 }
 
-/** GET: /api/user/createResetSession */
+/** GET: /api/createResetSession */
 export async function createResetSession(req, res) {
     // Implement your createResetSession logic here
     res.json('createResetSession route');
