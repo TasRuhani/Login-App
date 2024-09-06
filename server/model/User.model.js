@@ -19,7 +19,7 @@ export const UserSchema = new mongoose.Schema({
         unique : true,
     },
     firstName : {type: String},
-    lastname : {type : String},
+    lastName : {type : String},
     mobile : {type : Number},
     address : {type : String},
     profile : {type : String}

@@ -78,7 +78,7 @@ export async function login(req, res) {
             username: user.username,
         }, ENV.JWT_SECRET, { expiresIn: "24h" });
 
-        return res.status(200).json({
+        return res.status(201).json({
             message: "Login successful",
             username: user.username,
             token
@@ -102,7 +102,7 @@ export async function getUser(req, res) {
         // Destructure to exclude the password field
         const { password, ...rest } = user.toObject();
 
-        return res.status(200).json(rest);
+        return res.status(201).json(rest);
     } catch (error) {
         console.error(error);
         return res.status(500).json({ error: "Internal Server Error" });
@@ -124,7 +124,7 @@ export async function updateUser(req, res) {
                 return res.status(404).json({ error: "User Not Found or No Changes Made" });
             }
 
-            return res.status(200).json({ msg: "Database Updated" });
+            return res.status(201).json({ msg: "Database Updated" });
         } else {
             return res.status(400).json({ error: "ID not provided" });
         }
@@ -154,8 +154,7 @@ export async function verifyOTP(req, res) {
 /** GET: /api/createResetSession */
 export async function createResetSession(req, res) {
     if (req.app.locals.resetSession) {
-        req.app.locals.resetSession = false; // allow access to this route only once
-        return res.status(201).send({ msg: "Access Granted" });
+        return res.status(201).send({ flag: req.app.locals.resetSession });
     }
     return res.status(440).send({ error: "Session Expired" });
 }
